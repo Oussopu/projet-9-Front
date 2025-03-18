@@ -1,8 +1,7 @@
-import VerticalLayout from './VerticalLayout.js'
-import ErrorPage from "./ErrorPage.js"
-import LoadingPage from "./LoadingPage.js"
-
-import Actions from './Actions.js'
+import VerticalLayout from './VerticalLayout.js';
+import ErrorPage from "./ErrorPage.js";
+import LoadingPage from "./LoadingPage.js";
+import Actions from './Actions.js';
 
 const row = (bill) => {
   return (`
@@ -16,16 +15,18 @@ const row = (bill) => {
         ${Actions(bill.fileUrl)}
       </td>
     </tr>
-    `)
-  }
+  `);
+};
 
 const rows = (data) => {
-  return (data && data.length) ? data.map(bill => row(bill)).join("") : ""
-}
+  if (data && data.length) {
+    const sortedBills = data.sort((a, b) => (new Date(b.date) - new Date(a.date)));
+    return sortedBills.map(bill => row(bill)).join("");
+  }
+  return "";
+};
 
-export default ({ data: bills, loading, error }) => {
-  
-  const modal = () => (`
+export const modal = () => (`
     <div class="modal fade" id="modaleFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
@@ -40,14 +41,15 @@ export default ({ data: bills, loading, error }) => {
         </div>
       </div>
     </div>
-  `)
+  `);
 
+export default ({ data: bills, loading, error }) => {
   if (loading) {
-    return LoadingPage()
+    return LoadingPage();
   } else if (error) {
-    return ErrorPage(error)
+    return ErrorPage(error);
   }
-  
+
   return (`
     <div class='layout'>
       ${VerticalLayout(120)}
@@ -57,8 +59,8 @@ export default ({ data: bills, loading, error }) => {
           <button type="button" data-testid='btn-new-bill' class="btn btn-primary">Nouvelle note de frais</button>
         </div>
         <div id="data-table">
-        <table id="example" class="table table-striped" style="width:100%">
-          <thead>
+          <table id="example" class="table table-striped" style="width:100%">
+            <thead>
               <tr>
                 <th>Type</th>
                 <th>Nom</th>
@@ -67,14 +69,14 @@ export default ({ data: bills, loading, error }) => {
                 <th>Statut</th>
                 <th>Actions</th>
               </tr>
-          </thead>
-          <tbody data-testid="tbody">
-            ${rows(bills)}
-          </tbody>
+            </thead>
+            <tbody data-testid="tbody">
+              ${rows(bills)}
+            </tbody>
           </table>
         </div>
       </div>
       ${modal()}
-    </div>`
-  )
-}
+    </div>
+  `);
+};
