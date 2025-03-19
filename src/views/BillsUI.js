@@ -1,10 +1,10 @@
-import VerticalLayout from './VerticalLayout.js';
+import VerticalLayout from "./VerticalLayout.js";
 import ErrorPage from "./ErrorPage.js";
 import LoadingPage from "./LoadingPage.js";
-import Actions from './Actions.js';
+import Actions from "./Actions.js";
 
 const row = (bill) => {
-  return (`
+  return `
     <tr>
       <td>${bill.type}</td>
       <td>${bill.name}</td>
@@ -15,18 +15,20 @@ const row = (bill) => {
         ${Actions(bill.fileUrl)}
       </td>
     </tr>
-  `);
+  `;
 };
 
 const rows = (data) => {
   if (data && data.length) {
-    const sortedBills = data.sort((a, b) => (new Date(b.date) - new Date(a.date)));
-    return sortedBills.map(bill => row(bill)).join("");
+    const sortedBills = data.sort(
+      (a, b) => new Date(b.date) - new Date(a.date)
+    );
+    return sortedBills.map((bill) => row(bill)).join("");
   }
   return "";
 };
 
-export const modal = () => (`
+export const modal = () => `
     <div class="modal fade" id="modaleFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
@@ -41,7 +43,7 @@ export const modal = () => (`
         </div>
       </div>
     </div>
-  `);
+  `;
 
 export default ({ data: bills, loading, error }) => {
   if (loading) {
@@ -50,7 +52,7 @@ export default ({ data: bills, loading, error }) => {
     return ErrorPage(error);
   }
 
-  return (`
+  return `
     <div class='layout'>
       ${VerticalLayout(120)}
       <div class='content'>
@@ -78,5 +80,5 @@ export default ({ data: bills, loading, error }) => {
       </div>
       ${modal()}
     </div>
-  `);
+  `;
 };

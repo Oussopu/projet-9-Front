@@ -10,7 +10,7 @@ import { ROUTES_PATH } from "../constants/routes.js";
 import mockStore from "../__mocks__/store";
 import router from "../app/Router.js";
 
-jest.mock("../app/Store", () => mockStore); 
+jest.mock("../app/Store", () => mockStore);
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on Bills Page", () => {
@@ -25,22 +25,24 @@ describe("Given I am connected as an employee", () => {
     });
 
     test("Then bill icon in vertical layout should be highlighted", async () => {
-      await waitFor(() => screen.getByTestId('icon-window'));
-      const windowIcon = screen.getByTestId('icon-window');
+      await waitFor(() => screen.getByTestId("icon-window"));
+      const windowIcon = screen.getByTestId("icon-window");
 
       expect(windowIcon.classList.contains("active-icon")).toBe(true);
     });
 
     test("Then bills should be ordered from latest to earliest", () => {
       document.body.innerHTML = BillsUI({ data: bills });
-    
+
       const dates = screen
-        .getAllByText(/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i)
+        .getAllByText(
+          /^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i
+        )
         .map((a) => a.innerHTML);
-    
-      const antiChrono = (a, b) => (new Date(b) - new Date(a));
+
+      const antiChrono = (a, b) => new Date(b) - new Date(a);
       const datesSorted = [...dates].sort(antiChrono);
-    
+
       expect(datesSorted).toEqual(dates);
     });
 
@@ -54,7 +56,7 @@ describe("Given I am connected as an employee", () => {
       const firstEyeIcon = eyeIcon[0];
       fireEvent.click(firstEyeIcon);
 
-      expect(screen.getAllByText('Justificatif')).toBeInTheDocument;
+      expect(screen.getAllByText("Justificatif")).toBeInTheDocument;
     });
 
     test("Then it should display the correct number of bills", () => {
@@ -87,52 +89,59 @@ describe("Given I am connected as an employee", () => {
       const newBillButton = screen.getByTestId("btn-new-bill");
       fireEvent.click(newBillButton);
 
-      await waitFor(() => expect(screen.getByText("Envoyer une note de frais")).toBeTruthy());
+      await waitFor(() =>
+        expect(screen.getByText("Envoyer une note de frais")).toBeTruthy()
+      );
     });
 
     test("Then if formatDate fails, it should log an error and return unformatted date", async () => {
+      jest
+        .spyOn(mockStore.bills(), "list")
+        .mockImplementationOnce(() =>
+          Promise.resolve([{ date: "invalid-date", status: "pending" }])
+        );
 
-      jest.spyOn(mockStore.bills(), "list").mockImplementationOnce(() =>
-        Promise.resolve([{ date: "invalid-date", status: "pending" }])
-      );
-
-      const billsContainer = new Bills({ document, store: mockStore, localStorage: window.localStorage });
+      const billsContainer = new Bills({
+        document,
+        store: mockStore,
+        localStorage: window.localStorage,
+      });
       const bills = await billsContainer.getBills();
 
       expect(bills[0].date).toBe("invalid-date");
     });
 
-  describe("When an error occurs on API", () => {
-    beforeEach(() => {
-      jest.spyOn(mockStore, "bills");
-      localStorage.setItem("user", JSON.stringify({ type: "Employee" }));
-      const root = document.createElement("div");
-      root.setAttribute("id", "root");
-      document.body.append(root);
-      router();
-    });
+    describe("When an error occurs on API", () => {
+      beforeEach(() => {
+        jest.spyOn(mockStore, "bills");
+        localStorage.setItem("user", JSON.stringify({ type: "Employee" }));
+        const root = document.createElement("div");
+        root.setAttribute("id", "root");
+        document.body.append(root);
+        router();
+      });
 
-    test("Then it should display an error message when API returns a 404 error", async () => {
-      mockStore.bills.mockImplementationOnce(() => ({
-        list: () => Promise.reject(new Error("Erreur 404")),
-      }));
-      window.onNavigate(ROUTES_PATH.Bills);
-      await new Promise(process.nextTick);
+      test("Then it should display an error message when API returns a 404 error", async () => {
+        mockStore.bills.mockImplementationOnce(() => ({
+          list: () => Promise.reject(new Error("Erreur 404")),
+        }));
+        window.onNavigate(ROUTES_PATH.Bills);
+        await new Promise(process.nextTick);
 
-      const message = screen.getByText(/Erreur 404/);
-      expect(message).toBeTruthy();
-    });
+        const message = screen.getByText(/Erreur 404/);
+        expect(message).toBeTruthy();
+      });
 
-    test("Then it should display a 500 error message when the API fails", async () => {
-      mockStore.bills.mockImplementationOnce(() => ({
-        list: () => Promise.reject(new Error("Erreur 500")),
-      }));
-      window.onNavigate(ROUTES_PATH.Bills);
-      await new Promise(process.nextTick);
+      test("Then it should display a 500 error message when the API fails", async () => {
+        mockStore.bills.mockImplementationOnce(() => ({
+          list: () => Promise.reject(new Error("Erreur 500")),
+        }));
+        window.onNavigate(ROUTES_PATH.Bills);
+        await new Promise(process.nextTick);
 
-      const message = screen.getByText(/Erreur 500/);
-      expect(message).toBeTruthy();
+        const message = screen.getByText(/Erreur 500/);
+        expect(message).toBeTruthy();
+      });
     });
   });
-});
 });
